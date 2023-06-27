@@ -1,8 +1,9 @@
 import os
 import numpy as np
 
-specs = ["Non","Fatal","Minor"]
-classifiers = ["N - NOT INJURED","B - MINOR INJURY", "K - FATAL INJURY"]
+specs = ["Non","Fatal"]
+# classifiers = ["N - NOT INJURED","B - MINOR INJURY", "K - FATAL INJURY"]
+classifiers = ["N - NOT INJURED", "K - FATAL INJURY"]
 
 # LITERALLY JUST READING INFO
 # Here, we read the files present in the folder path specified (crashes)
@@ -13,12 +14,11 @@ def get_file_names(folder_path):
             file_names.append(file_name)
     return file_names
 
-
 # FULL ARRAY
 narrative_array = []
 
 for spec in specs:
-    print(spec)
+    # print(spec)
     narrative_line = []
     folder_path ='liftedText/'+spec  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
     file_names = get_file_names(folder_path)
@@ -48,21 +48,15 @@ for run in range(0,groups):
         total.append(narrative_array[run][assign])
 # print(len(total))
 # print(len(classify))
-    
-'''
-1. assign classifications
-2. convert matrix to array
-3. link to classifications
-'''
-
 
 
 # # ACTUAL DATA PROCESSING STUFF
 def testing(narratives,classifications):
     from sklearn.feature_extraction.text import CountVectorizer
-    from sklearn.model_selection import train_test_split
+    from sklearn.model_selection import train_test_split, GridSearchCV
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.metrics import accuracy_score
+    # from sklearn import svm
 
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
@@ -73,15 +67,27 @@ def testing(narratives,classifications):
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, classifications, test_size=0.2, random_state=42)
+    param_grid = {
+    'n_estimators': [50, 100, 150, 200, 250],
+    'max_depth': [None, 5, 10, 15, 20]
+    }
+
+
 
     # Instantiate and train the logistic regression classifier
     classifier = RandomForestClassifier()
-    classifier.fit(X_train, y_train)
+    grid_search = GridSearchCV(classifier, param_grid, cv=5)
+    grid_search.fit(X_train, y_train)
+
+    # classifier.fit(X_train, y_train)
 
     # Make predictions on the testing set
     # test_case = ["Passenger in unit 1 had a no injuries"]
     # test_case_transformed = vectorizer.transform(test_case)
-    y_pred = classifier.predict(X_test)
+    best_params = grid_search.best_params_
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+    # y_pred = classifier.predict(X_test)
     # y_pred = classifier.predict(test_case_transformed)
     
 
@@ -91,5 +97,6 @@ def testing(narratives,classifications):
     # print(X_test)
     # print(y_test)
     # print(y_pred)
-
+# print(classify)
+# print(total)
 testing(total,classify)
