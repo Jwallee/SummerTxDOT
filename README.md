@@ -29,7 +29,6 @@
 > 4. pytesseract (Module AND program - Does the image analysis)
 
 **All of these need to be included in your path to run the code properly!**
-
 ---
 
 ## Instructions to run
