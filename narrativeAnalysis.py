@@ -4,7 +4,7 @@ from PIL import Image
 import os
 
 # WHAT SPECIFICATION ARE YOU DOING (ONLY CHANGE THIS!!!!)
-spec = "Non"
+spec = "Fatal"
 
 # Here, we read the files present in the folder path specified (crashes)
 def get_file_names(folder_path):

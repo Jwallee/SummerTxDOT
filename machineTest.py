@@ -1,7 +1,10 @@
 import os
+import numpy as np
+
+specs = ["Non","Fatal","Minor"]
+classifiers = ["N - NOT INJURED","B - MINOR INJURY", "K - FATAL INJURY"]
 
 # LITERALLY JUST READING INFO
-
 # Here, we read the files present in the folder path specified (crashes)
 def get_file_names(folder_path):
     file_names = []
@@ -10,28 +13,51 @@ def get_file_names(folder_path):
             file_names.append(file_name)
     return file_names
 
+
+# FULL ARRAY
 narrative_array = []
 
-folder_path ='liftedText'  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
-file_names = get_file_names(folder_path)
+for spec in specs:
+    print(spec)
+    narrative_line = []
+    folder_path ='liftedText/'+spec  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
+    file_names = get_file_names(folder_path)
 
-for name in file_names:
-    file_path = "liftedText/"+name
-    # Open the file in read mode
-    with open(file_path, 'r') as file:
-        # Read the contents of the file line by line
-        lines = file.read()
-        text_string = lines.replace("\n", " ")
-        text_string = text_string.upper()
-        narrative_array.append(text_string)
+    for name in file_names:
+        file_path = folder_path+"/"+name
+        # Open the file in read mode
+        with open(file_path, 'r') as file:
+            # Read the contents of the file line by line
+            lines = file.read()
+            text_string = lines.replace("\n", " ")
+            text_string = text_string.upper()
+            narrative_line.append(text_string)
+    # Adding to main matrix
+    narrative_array.append(narrative_line)
 
-print(len(narrative_array))
 
-# ACTUAL DATA PROCESSING STUFF
+groups = len(narrative_array)
+# print(groups)
+values = len(narrative_array[0])
+# print(values)
+total = []
+classify = []
+for run in range(0,groups):
+    for assign in range(0,len(narrative_array[0])):
+        classify.append(classifiers[run])
+        total.append(narrative_array[run][assign])
+# print(len(total))
+# print(len(classify))
+    
+'''
+1. assign classifications
+2. convert matrix to array
+3. link to classifications
+'''
 
-# These classifications define what the heck each of the reports are in severe/non-severe.
-classifications = ["K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","K - FATAL INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","B - MINOR INJURY","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED","N - NOT INJURED"]
 
+
+# # ACTUAL DATA PROCESSING STUFF
 def testing(narratives,classifications):
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.model_selection import train_test_split
@@ -66,4 +92,4 @@ def testing(narratives,classifications):
     # print(y_test)
     # print(y_pred)
 
-testing(narrative_array,classifications)
+testing(total,classify)

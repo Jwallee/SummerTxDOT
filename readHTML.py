@@ -45,7 +45,7 @@ def download(crash):
 import pandas as pd
 
 # Path to the Excel file
-excel_file_path = 'crashes/Images Data.xlsx'
+excel_file_path = 'crashes/MinorDec2022.xlsx'
 
 # Read the Excel file into a pandas DataFrame, skipping the first 3 rows
 df = pd.read_excel(excel_file_path, skiprows=2)
