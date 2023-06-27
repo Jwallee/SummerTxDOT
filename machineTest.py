@@ -1,9 +1,12 @@
 import os
 import numpy as np
+import pandas as pd
+
 
 specs = ["Non","Fatal"]
 # classifiers = ["N - NOT INJURED","B - MINOR INJURY", "K - FATAL INJURY"]
 classifiers = ["N - NOT INJURED", "K - FATAL INJURY"]
+speeds = []
 
 # LITERALLY JUST READING INFO
 # Here, we read the files present in the folder path specified (crashes)
@@ -13,6 +16,21 @@ def get_file_names(folder_path):
         if os.path.isfile(os.path.join(folder_path, file_name)):
             file_names.append(file_name)
     return file_names
+
+# Read the Excel spreadsheet
+df = pd.read_excel('crashes/NonDec2022Update.xlsx', usecols='B', skiprows=2)
+raw = df.values
+# Print the speeds array
+for a in raw:
+    for l in a:
+        speeds.append(l)
+df = pd.read_excel('crashes/Fatal2022Update.xlsx', usecols='B', skiprows=2)
+raw = df.values
+for a in raw:
+    for l in a:
+        speeds.append(l)
+# print(speeds)
+
 
 # FULL ARRAY
 narrative_array = []
@@ -51,22 +69,31 @@ for run in range(0,groups):
 
 
 # # ACTUAL DATA PROCESSING STUFF
-def testing(narratives,classifications):
+def testing(narratives,classifications,speed):
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.model_selection import train_test_split, GridSearchCV
+    from sklearn.preprocessing import LabelEncoder
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.metrics import accuracy_score
+    from sklearn.model_selection import cross_val_score
+    import scipy.sparse as sp
     # from sklearn import svm
 
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
 
     # Fit and transform the narratives into a feature matrix
-    X = vectorizer.fit_transform(narratives)
+    X_narratives = vectorizer.fit_transform(narratives)
     # print(vectorizer.vocabulary_)
 
+
+    label_encoder = LabelEncoder()
+    speeds_encoded = label_encoder.fit_transform(speed)
+
+    X_combined = sp.hstack([X_narratives, sp.csr_matrix(speeds_encoded).T])
+
     # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, classifications, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_combined, classifications, test_size=0.2, random_state=42)
     param_grid = {
     'n_estimators': [50, 100, 150, 200, 250],
     'max_depth': [None, 5, 10, 15, 20]
@@ -92,11 +119,24 @@ def testing(narratives,classifications):
     
 
     # # Evaluate the model's performance
-    accuracy = accuracy_score(y_test, y_pred)
-    print("Accuracy:", accuracy)
+    # accuracy = accuracy_score(y_test, y_pred)
+    # print("Accuracy:", accuracy)
+
+    # Perform cross-validation
+    cv_scores = cross_val_score(classifier, X_combined, classifications, cv=5)
+
+    # Print the cross-validation scores
+    print("Cross-Validation Scores:", cv_scores)
+    print("Mean Accuracy:", cv_scores.mean())
+
+
+
+
+
     # print(X_test)
     # print(y_test)
     # print(y_pred)
 # print(classify)
 # print(total)
-testing(total,classify)
+
+testing(total,classify,speeds)
