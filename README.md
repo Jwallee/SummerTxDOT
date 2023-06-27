@@ -1,9 +1,21 @@
-# **Narrative Image Analysis**
+# **Machine Learning for Crash Narratives**
 *Since this can't be containerized without getting admin approval, I'm going to list out everything that you need to run this code!*
 
 *TxDOT*
 
 *James Grant Robinett*
+
+**THINGS THAT NEED TO BE DONE**
+> 1. Incorporate raw data aside from narratives to improve accuracy
+> 2. Clean up code and make it readable
+> 3. Explore how to streamline the reading/classification process
+> 4. Avoid Downloading manually somehow (not so manual now)
+
+**What can be done with these programs?**
+1. `narrativeAnalysis.py` can read all information from downloaded narratives
+2. `readHTML.py` streamlines the download process for narratives (*takes control of mouse and keyboard*)
+3. `machineTest.py` is the machine learning module used to predict fields with narratives
+
 
 **Necessary Programs**
 > 1. VsCode (or any other code editor)
