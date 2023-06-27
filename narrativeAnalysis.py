@@ -3,6 +3,9 @@ from pdf2image import convert_from_path
 from PIL import Image
 import os
 
+# WHAT SPECIFICATION ARE YOU DOING (ONLY CHANGE THIS!!!!)
+spec = "Non"
+
 # Here, we read the files present in the folder path specified (crashes)
 def get_file_names(folder_path):
     file_names = []
@@ -11,7 +14,7 @@ def get_file_names(folder_path):
             file_names.append(file_name)
     return file_names
 
-folder_path = 'crashes'  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
+folder_path = 'crashes/'+spec+"/"  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
 file_names = get_file_names(folder_path)
 
 narrative_array = []
@@ -20,13 +23,13 @@ narrative_array = []
 for name in file_names:
 
     # The path to read the pdfs
-    pdf_path = 'crashes/'+name
+    pdf_path = folder_path+name
 
     # Convert the narrative page of the PDF to an image
     images = convert_from_path(pdf_path, first_page=2, last_page=2)
 
     # Save the image (whole folder)
-    out_path = 'whole/'+name+'.jpg'
+    out_path = 'whole/'+spec+"/"+name+'.jpg'
     images[0].save(out_path, 'JPEG')
 
     def crop_image(image_path, output_path, target_size):
@@ -52,7 +55,7 @@ for name in file_names:
 
     # Example usage
     image_path = out_path  # Replace with your image path
-    output_path = 'cropped/'+name+'.jpg'  # Replace with your desired output path
+    output_path = 'cropped/'+spec+"/"+name+'.jpg'  # Replace with your desired output path
     target_size = (3312, 3100)  # Replace with your desired target size
 
     crop_image(image_path, output_path, target_size)
@@ -65,6 +68,6 @@ for name in file_names:
 
     # Extract text using Tesseract OCR
     text = pytesseract.image_to_string(output_path)
-    file_path = "liftedText/"+name+".txt"
+    file_path = "liftedText/"+spec+"/"+name+".txt"
 
     save_text_to_file(text, file_path)

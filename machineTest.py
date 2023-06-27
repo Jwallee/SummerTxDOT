@@ -53,13 +53,17 @@ def testing(narratives,classifications):
     classifier.fit(X_train, y_train)
 
     # Make predictions on the testing set
+    # test_case = ["Passenger in unit 1 had a no injuries"]
+    # test_case_transformed = vectorizer.transform(test_case)
     y_pred = classifier.predict(X_test)
+    # y_pred = classifier.predict(test_case_transformed)
+    
 
-    # Evaluate the model's performance
+    # # Evaluate the model's performance
     accuracy = accuracy_score(y_test, y_pred)
     print("Accuracy:", accuracy)
     # print(X_test)
-    print(y_test)
-    print(y_pred)
+    # print(y_test)
+    # print(y_pred)
 
 testing(narrative_array,classifications)
