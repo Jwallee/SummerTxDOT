@@ -89,15 +89,18 @@ for run in range(0,groups):
 # print(len(classify))
 
 
+
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
+import scipy.sparse as sp
 # # ACTUAL DATA PROCESSING STUFF
 def testing(narratives,classifications,speed,light):
-    from sklearn.feature_extraction.text import CountVectorizer
-    from sklearn.model_selection import train_test_split, GridSearchCV
-    from sklearn.preprocessing import LabelEncoder
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.metrics import accuracy_score
-    from sklearn.model_selection import cross_val_score
-    import scipy.sparse as sp
     # from sklearn import svm
 
     # Initialize the CountVectorizer
@@ -110,7 +113,6 @@ def testing(narratives,classifications,speed,light):
 
     label_encoder = LabelEncoder()
     speeds_encoded = label_encoder.fit_transform(speed)
-    # weather_encoded = label_encoder.fit_transform(weather)
     light_encoded = label_encoder.fit_transform(light)
 
     X_combined = sp.hstack([X_narratives, sp.csr_matrix(speeds_encoded). T, sp.csr_matrix(light_encoded).T])
@@ -132,51 +134,40 @@ def testing(narratives,classifications,speed,light):
 
     grid_search = GridSearchCV(classifier, param_grid, cv=8)
     grid_search.fit(X_train, y_train)
-    results = grid_search.cv_results_
-    params = results['params']
-    mean_scores = results['mean_test_score']
-    # Print the accuracies for each parameter combination
-    for param, score in zip(params, mean_scores):
-        print("Parameters:", param)
-        print("Mean Accuracy:", score)
-        print()
 
-
-
-    # classifier.fit(X_train, y_train)
+    # Get the best model from grid search
+    best_model = grid_search.best_estimator_
 
     # Make predictions on the testing set
-    # test_case = ["Passenger in unit 1 had a no injuries"]
-    # test_case_transformed = vectorizer.transform(test_case)
+    y_pred = best_model.predict(X_test)
 
-    # best_params = grid_search.best_params_
-    # best_model = grid_search.best_estimator_
-    # y_pred = best_model.predict(X_test)
-    # y_pred = classifier.predict(X_test)
+    # Evaluate the model's performance
+    accuracy = accuracy_score(y_test, y_pred)
+    print("Accuracy:", accuracy)
 
-    # y_pred = classifier.predict(test_case_transformed)
-    
+    # Return the best model
+    return best_model, vectorizer, label_encoder
+    # results = grid_search.cv_results_
+    # params = results['params']
+    # mean_scores = results['mean_test_score']
+    # # Print the accuracies for each parameter combination
+    # for param, score in zip(params, mean_scores):
+    #     print("Parameters:", param)
+    #     print("Mean Accuracy:", score)
+    #     print()
 
-    # # Evaluate the model's performance
-    # accuracy = accuracy_score(y_test, y_pred)
-    # print("Accuracy:", accuracy)
-
-    # Perform cross-validation
-    # cv_scores = cross_val_score(classifier, X_combined, classifications, cv=5)
-
-    # # Print the cross-validation scores
-    # print("Cross-Validation Scores:", cv_scores)
-    # print("Mean Accuracy:", cv_scores.mean())
-
-
-
-
-
-    # print(X_test)
-    # print(y_test)
-    # print(y_pred)
 # print(classify)
 # print(total)
 
-# testing(total,classify,speeds,weathers,lights)
-testing(total,classify,speeds,lights)
+best_model, vectorizer, label_encoder = testing(total,classify,speeds,lights)
+
+own_narrative = "UNIT 1 RAMMED IN TO UNIT 2 AT HIGH SPEED. UNIT 1 WAS EJECTED AND DIED ON SIDE OF ROAD."
+own_speed = 70
+own_light = "DARK, NOT LIGHTED"
+own_light_encoded = label_encoder.fit_transform([own_light])
+own_narrative_transformed = vectorizer.transform([own_narrative])
+own_combined = sp.hstack([own_narrative_transformed, sp.csr_matrix([own_speed]).T, sp.csr_matrix(own_light_encoded).T])
+
+own_prediction = best_model.predict(own_combined)
+
+print("Predicted Label:", own_prediction)
