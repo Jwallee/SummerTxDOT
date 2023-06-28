@@ -86,7 +86,7 @@ for run in range(0,groups):
         classify.append(classifiers[run])
         total.append(narrative_array[run][assign])
 # print(len(total))
-# print(len(classify))
+# print(classify)
 
 
 
@@ -96,7 +96,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import cross_val_score
 import scipy.sparse as sp
 # # ACTUAL DATA PROCESSING STUFF
@@ -142,9 +142,24 @@ def testing(narratives,classifications,speed,light):
     y_pred = best_model.predict(X_test)
 
     # Evaluate the model's performance
+    # Evaluate the model's performance
     accuracy = accuracy_score(y_test, y_pred)
-    print("Accuracy:", accuracy)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
 
+    print("Accuracy:", accuracy)
+    print("Precision:", precision)
+    print("Recall:", recall)
+    print("F1-score:", f1)
+
+    # Print narratives, predicted labels, and actual labels
+    for narrative, pred_label, actual_label in zip(narratives, y_pred, y_test):
+        print("Narrative:", narrative)
+        print("Predicted Label:", pred_label)
+        print("Actual Label:", actual_label)
+        print()
+    
     # Return the best model
     return best_model, vectorizer, label_encoder
     # results = grid_search.cv_results_
@@ -161,13 +176,13 @@ def testing(narratives,classifications,speed,light):
 
 best_model, vectorizer, label_encoder = testing(total,classify,speeds,lights)
 
-own_narrative = "UNIT 1 RAMMED IN TO UNIT 2 AT HIGH SPEED. UNIT 1 WAS EJECTED AND DIED ON SIDE OF ROAD."
-own_speed = 70
-own_light = "DARK, NOT LIGHTED"
-own_light_encoded = label_encoder.fit_transform([own_light])
-own_narrative_transformed = vectorizer.transform([own_narrative])
-own_combined = sp.hstack([own_narrative_transformed, sp.csr_matrix([own_speed]).T, sp.csr_matrix(own_light_encoded).T])
+# own_narrative = "UNIT 1 RAMMED IN TO UNIT 2 AT HIGH SPEED. UNIT 1 WAS EJECTED AND PASSED AWAY."
+# own_speed = 70
+# own_light = "DARK, NOT LIGHTED"
+# own_light_encoded = label_encoder.fit_transform([own_light])
+# own_narrative_transformed = vectorizer.transform([own_narrative])
+# own_combined = sp.hstack([own_narrative_transformed, sp.csr_matrix([own_speed]).T, sp.csr_matrix(own_light_encoded).T])
 
-own_prediction = best_model.predict(own_combined)
+# own_prediction = best_model.predict(own_combined)
 
-print("Predicted Label:", own_prediction)
+# print("Predicted Label:", own_prediction)
