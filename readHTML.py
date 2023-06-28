@@ -1,3 +1,6 @@
+# Path to the Excel file stored in crashes/excel
+excel_file = 'RoadClassAug2022US&STATEHIGHWAYS.xlsx'
+
 def download(crash):
     import webbrowser
     import pyautogui
@@ -44,17 +47,20 @@ def download(crash):
 
 import pandas as pd
 
-# Path to the Excel file
-excel_file_path = 'crashes/MinorDec2022.xlsx'
+reading_path = 'crashes/Road Class/excel/'+excel_file
 
 # Read the Excel file into a pandas DataFrame, skipping the first 3 rows
-df = pd.read_excel(excel_file_path, skiprows=2)
+df = pd.read_excel(reading_path, usecols= 'A',skiprows=2)
+
+if len(df) > 50:
+    # Restrict the DataFrame to the first 50 rows
+    df = df.head(50)
 
 # Convert the DataFrame to a 2D array
 values_array = df.values.tolist()
 
 # Print the values
+print(len(values_array))
 for row in values_array:
     for value in row:
         download(str(value))
-

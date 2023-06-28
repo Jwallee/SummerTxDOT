@@ -1,16 +1,65 @@
 import os
 import numpy as np
 import pandas as pd
+import warnings
+from openpyxl import Workbook
+# Filter out the specific warning
+warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl.styles.stylesheet")
+
+'''
+    ROAD CLASS PREDICTION
+Data Collected From These Parameters:
+
+Data Used: Roadway System, Outside City Limits, Toll Road/Toll Lane, Narrative
+Crash Range: 2022 Austin, TX
+
+Reports downloaded top to bottom based on crash ID
+'''
+
+# Specs = folders you are accessing with data
+# TOLL BRIDGES DATA NOT FOUND YET
 
 
-specs = ["Non","Fatal"]
-classifiers = ["N - NOT INJURED", "K - FATAL INJURY"]
-speeds = []
-weathers = []
-lights = []
+# region WHAT NEEDS TO BE CHANGED
+Field = 'Road Class'
+specs = ["CityStreet","CountyRoad","FarmToMarket","Interstate","NonTrafficway","OtherRoads","Tollway","US&StateHighways"]
+classifiers = ["CITY STREET", "COUNTY ROAD", "FARM TO MARKET", "INTERSTATE", "NON-TRAFFICWAY", "OTHER ROADS", "TOLLWAY", "US & STATE HIGHWAYS"]
 
-# LITERALLY JUST READING INFO
-# Here, we read the files present in the folder path specified (crashes)
+RoadwaySystem = []
+OutsideCL = []
+TollRoad = []
+info_variables = ["RoadwaySystem", "OutsideCL", "TollRoad"]
+info = [RoadwaySystem, OutsideCL, TollRoad]
+columns = ['B','C','E']
+dataset_limit = 50
+# endregion
+
+# region READING EXCEL SPREADSHEET
+
+
+# Read the Excel spreadsheet
+
+
+
+directory_path = 'crashes/'+Field+'/excel'
+
+for file_name in os.listdir(directory_path):
+    file_path = os.path.join(directory_path, file_name)
+    file_values = []  # New array for each file
+    
+    for column in columns:
+        df = pd.read_excel(file_path, usecols=column, skiprows=2, nrows = dataset_limit)
+        values = df.values.flatten().tolist()
+        file_values.append(values)  # Append values to the file array
+        
+    RoadwaySystem.append(file_values[0])  # Append file array to RoadwaySystem
+    OutsideCL.append(file_values[1])  # Append file array to OutsideCL
+    TollRoad.append(file_values[2])  # Append file array to TollRoad
+
+# endregion
+
+# region READING TEXT INTO PROGRAM
+
 def get_file_names(folder_path):
     file_names = []
     for file_name in os.listdir(folder_path):
@@ -18,48 +67,13 @@ def get_file_names(folder_path):
             file_names.append(file_name)
     return file_names
 
-# Read the Excel spreadsheet
-sdf = pd.read_excel('crashes/NonDec2022Update.xlsx', usecols='B', skiprows=2)
-wdf = pd.read_excel('crashes/NonDec2022Update.xlsx', usecols='D', skiprows=2)
-ldf = pd.read_excel('crashes/NonDec2022Update.xlsx', usecols='C', skiprows=2)
-rawS = sdf.values
-for a in rawS:
-    for l in a:
-        speeds.append(l)
-rawW = wdf.values
-for a in rawW:
-    for l in a:
-        weathers.append(l)
-rawL = ldf.values
-for a in rawL:
-    for l in a:
-        lights.append(l)
-
-sdf = pd.read_excel('crashes/Fatal2022Update.xlsx', usecols='B', skiprows=2)
-wdf = pd.read_excel('crashes/Fatal2022Update.xlsx', usecols='D', skiprows=2)
-ldf = pd.read_excel('crashes/Fatal2022Update.xlsx', usecols='C', skiprows=2)
-rawS = sdf.values
-for a in rawS:
-    for l in a:
-        speeds.append(l)
-rawW = wdf.values
-for a in rawW:
-    for l in a:
-        weathers.append(l)
-rawL = ldf.values
-for a in rawL:
-    for l in a:
-        lights.append(l)
-# print(speeds)
-
-
 # FULL ARRAY
 narrative_array = []
 
 for spec in specs:
     # print(spec)
     narrative_line = []
-    folder_path ='liftedText/'+spec  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
+    folder_path ='liftedText/'+Field+"/"+spec  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
     file_names = get_file_names(folder_path)
 
     for name in file_names:
@@ -81,14 +95,20 @@ values = len(narrative_array[0])
 # print(values)
 total = []
 classify = []
-for run in range(0,groups):
-    for assign in range(0,len(narrative_array[0])):
+
+
+for run in range(0,len(narrative_array)):
+    for assign in range(0,len(narrative_array[run])):
+        # print(assign)
         classify.append(classifiers[run])
         total.append(narrative_array[run][assign])
 # print(len(total))
 # print(classify)
 
+# endregion
 
+
+# region MACHINE LEARNING MODULE
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
@@ -96,10 +116,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import cross_val_score
 import scipy.sparse as sp
-# # ACTUAL DATA PROCESSING STUFF
-def testing(narratives,classifications,speed,light):
-    # from sklearn import svm
+# # # ACTUAL DATA PROCESSING STUFF
 
+def testing(narratives,classifications, info_variables, info_values):
+    print(info_variables)
+    # print((info_values[0][0]))
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
 
@@ -107,12 +128,23 @@ def testing(narratives,classifications,speed,light):
     X_narratives = vectorizer.fit_transform(narratives)
     # print(vectorizer.vocabulary_)
 
-
+    # Encode the informational variables
+    label_encoders = {}
+    encoded_info = []
     label_encoder = LabelEncoder()
-    speeds_encoded = label_encoder.fit_transform(speed)
-    light_encoded = label_encoder.fit_transform(light)
 
-    X_combined = sp.hstack([X_narratives, sp.csr_matrix(speeds_encoded). T, sp.csr_matrix(light_encoded).T])
+    for b in info_values:
+        encoded_values = []
+        for c in b:
+            d = np.array(c)
+            d_flat = d.ravel()
+            encoded_value = label_encoder.fit_transform(d_flat)
+            encoded_values.append(encoded_value)
+        encoded_info.append(encoded_values)
+    
+    # Combine the narrative features and encoded informational variables
+    feature_matrices = [X_narratives] + [sp.vstack(info).T for info in encoded_info]
+    X_combined = sp.hstack(feature_matrices)
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X_combined, classifications, test_size=0.2, random_state=42)
@@ -159,6 +191,8 @@ def testing(narratives,classifications,speed,light):
     # Return the best model
     return best_model, vectorizer, label_encoder
 # print(classify)
-# print(total)
+# endregion
 
-best_model, vectorizer, label_encoder = testing(total,classify,speeds,lights)
+
+# RUNNING THE CODE
+best_model, vectorizer, label_encoder = testing(total,classify,info_variables,info)
