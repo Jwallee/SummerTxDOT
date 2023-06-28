@@ -89,9 +89,6 @@ for run in range(0,groups):
 # print(classify)
 
 
-
-
-
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
@@ -132,7 +129,7 @@ def testing(narratives,classifications,speed,light):
     classifier = RandomForestClassifier()
     # Checking efficienceies of each parameter combinaion
 
-    grid_search = GridSearchCV(classifier, param_grid, cv=8)
+    grid_search = GridSearchCV(classifier, param_grid, cv=6)
     grid_search.fit(X_train, y_train)
 
     # Get the best model from grid search
@@ -141,7 +138,6 @@ def testing(narratives,classifications,speed,light):
     # Make predictions on the testing set
     y_pred = best_model.predict(X_test)
 
-    # Evaluate the model's performance
     # Evaluate the model's performance
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, average='weighted')
@@ -162,27 +158,7 @@ def testing(narratives,classifications,speed,light):
     
     # Return the best model
     return best_model, vectorizer, label_encoder
-    # results = grid_search.cv_results_
-    # params = results['params']
-    # mean_scores = results['mean_test_score']
-    # # Print the accuracies for each parameter combination
-    # for param, score in zip(params, mean_scores):
-    #     print("Parameters:", param)
-    #     print("Mean Accuracy:", score)
-    #     print()
-
 # print(classify)
 # print(total)
 
 best_model, vectorizer, label_encoder = testing(total,classify,speeds,lights)
-
-# own_narrative = "UNIT 1 RAMMED IN TO UNIT 2 AT HIGH SPEED. UNIT 1 WAS EJECTED AND PASSED AWAY."
-# own_speed = 70
-# own_light = "DARK, NOT LIGHTED"
-# own_light_encoded = label_encoder.fit_transform([own_light])
-# own_narrative_transformed = vectorizer.transform([own_narrative])
-# own_combined = sp.hstack([own_narrative_transformed, sp.csr_matrix([own_speed]).T, sp.csr_matrix(own_light_encoded).T])
-
-# own_prediction = best_model.predict(own_combined)
-
-# print("Predicted Label:", own_prediction)
