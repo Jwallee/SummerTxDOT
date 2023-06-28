@@ -116,11 +116,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import cross_val_score
 import scipy.sparse as sp
+import re
 # # # ACTUAL DATA PROCESSING STUFF
 
 def testing(narratives,classifications, info_variables, info_values):
-    print(info_variables)
-    # print((info_values[0][0]))
+    # print(info_variables)
+    print(len(info_values))
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
 
@@ -133,15 +134,18 @@ def testing(narratives,classifications, info_variables, info_values):
     encoded_info = []
     label_encoder = LabelEncoder()
 
-    for b in info_values:
+
+
+    # PROBLEM CHILD
+    for info_set in info_values:
         encoded_values = []
-        for c in b:
-            d = np.array(c)
-            d_flat = d.ravel()
-            encoded_value = label_encoder.fit_transform(d_flat)
+        for info in info_set:
+            info = np.array(info, ndmin=1)  # Convert to 1D array
+            encoded_value = label_encoder.fit_transform(info)
             encoded_values.append(encoded_value)
         encoded_info.append(encoded_values)
     
+    # print(len(encoded_info))
     # Combine the narrative features and encoded informational variables
     feature_matrices = [X_narratives] + [sp.vstack(info).T for info in encoded_info]
     X_combined = sp.hstack(feature_matrices)
@@ -195,4 +199,5 @@ def testing(narratives,classifications, info_variables, info_values):
 
 
 # RUNNING THE CODE
+print(len(info))
 best_model, vectorizer, label_encoder = testing(total,classify,info_variables,info)
