@@ -21,6 +21,24 @@ Reports downloaded top to bottom based on crash ID
 
 
 # region WHAT NEEDS TO BE CHANGED
+'''
+Region Definitions:
+
+Storing Data Example: Road Class/CityStreet
+
+Field (string) - Name of where all of the information is stored (I organized it by what im finding i.e. Road Class, Severity)
+specs (Array) - Contains all of the classification names that will be accessed via filepath (i named my folders CityStreet, CountyRoad etc.)
+classifiers (Array) - Contains all of the classifiers that the machine learning module will use to link up with the narratives or whatever you link to.
+
+RoadwaySystem (list) - Contains all info for Roadway System interpretive field
+OutsideCL (list) - Contains all info for Outside City Limits interpretive field
+TollRoad (list) - Contains all info for Toll Road interpretive field
+info (array) - Contains all of the above lists and allows the machine learning function to apply these conditions to the linking process
+columns (list) - Column names for where you're reading information into the above lists from an excel spreadsheet
+dataset_limit (int) - An integer limiting the number of datapoints to 50. Can be changed if you have longer spreadsheets and want more data processed.
+'''
+
+
 Field = 'Road Class'
 specs = np.array(["CityStreet","CountyRoad","FarmToMarket","Interstate","NonTrafficway","OtherRoads","Tollway","US&StateHighways"])
 classifiers = np.array(["CITY STREET", "COUNTY ROAD", "FARM TO MARKET", "INTERSTATE", "NON-TRAFFICWAY", "OTHER ROADS", "TOLLWAY", "US & STATE HIGHWAYS"])
@@ -28,19 +46,11 @@ classifiers = np.array(["CITY STREET", "COUNTY ROAD", "FARM TO MARKET", "INTERST
 RoadwaySystem = []
 OutsideCL = []
 TollRoad = []
-info_variables = ["RoadwaySystem", "OutsideCL", "TollRoad"]
 info = np.array([])
 columns = ['B','C','E']
 dataset_limit = 50
-# endregion
-
-# region READING EXCEL SPREADSHEET
-
 
 # Read the Excel spreadsheet
-
-
-
 directory_path = 'crashes/'+Field+'/excel'
 
 for file_name in os.listdir(directory_path):
@@ -51,7 +61,7 @@ for file_name in os.listdir(directory_path):
         df = pd.read_excel(file_path, usecols=column, skiprows=2, nrows=dataset_limit)
         values = df.values.flatten().tolist()
         file_values.append(values)  # Append values to the file array
-        
+    
     RoadwaySystem.extend(file_values[0])  # Extend RoadwaySystem array
     OutsideCL.extend(file_values[1])  # Extend OutsideCL array
     TollRoad.extend(file_values[2])  # Extend TollRoad array
@@ -61,19 +71,18 @@ RoadwaySystem = np.array(RoadwaySystem)
 OutsideCL = np.array(OutsideCL)
 TollRoad = np.array(TollRoad)
 
-# print(RoadwaySystem.shape)
-
 # Create info array and reshape it
 info = np.array([RoadwaySystem, OutsideCL, TollRoad])
 info = info.reshape(3, 341)
-
-# print(info.shape)
-# print(info)
-# print(info[0].shape)
 # endregion
 
 # region READING TEXT INTO PROGRAM
+'''
+Region Definitions:
 
+narrative_array (array) - Takes all the narratives and puts them into one long array. (row x columns) system.
+classify (array) - Automatically makes a long array containing classifiers matching to the narrative array size.
+'''
 def get_file_names(folder_path):
     file_names = []
     for file_name in os.listdir(folder_path):
@@ -107,39 +116,39 @@ for spec in specs:
     narrative_array = np.append(narrative_array, narrative_line, axis = 0)
 
 
-groups = len(narrative_array)
-# print(groups)
-values = len(narrative_array[0])
-# print(values)
 classify = np.array([])
-total = np.array([])
-
 for run in range(len(classifiers)):
     for assign in range(sizer[run]):
         classify = np.append(classify, classifiers[run])
-        # total = np.append(total, narrative_array[run][assign])
-# print(len(total))
-# print(classify)
 
 # endregion
 
 
-
-
-
 # region MACHINE LEARNING MODULE
+'''
+Region Definitions:
+
+sklearn - SciKit library, which is responsible for the machine learning algorithms and classifiers
+
+def testing(narratives,classifications,info_values):
+    - Testing is a function that takes in narrative information, proper matching classifications and any information values (worked on above) that can help possibly improve the learning algorithm.
+    Inputs:
+        narratives (array) - Input array of all the narratives (MUST BE 1D)
+        classifications (array) - Input array of all the classifications (MUST BE 1D and same size as narratives)
+        info_values (array) - A dimensional array divided by informational values. For example, here we look at three informational values (RoadwaySystem, OutsideCL, TollRoad), so the initial size of info_values is 3.
+            Within each of those three values are 341 (the number of narratives) pieces of information that match the narratives and classifiers.
+'''
+
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
+from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.model_selection import cross_val_score
 import scipy.sparse as sp
-import re
 # # # ACTUAL DATA PROCESSING STUFF
 
 def testing(narratives,classifications,info_values):
-    # Checking sizes
+    # Checking sizes (EXTRA CODE FOR CHECKING, NOT NEEDED)
     # print(len(info_values))
     # print(len(info_values[0]))
     # print(len(info_values[1]))
@@ -150,11 +159,11 @@ def testing(narratives,classifications,info_values):
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
 
-    # Fit and transform the narratives into a feature matrix
+    # Transforms the narratives to numerical data that is then analyzed by SciKit.
     X_narratives = vectorizer.fit_transform(narratives)
     # print(vectorizer.vocabulary_)
 
-    # Prepare the data for MultiLabelBinarizer
+    # Prepare the data for MultiLabelBinarizer. This takes your information and makes it a string with number of dimensions categorized by the informational values.
     info_types = []
     for road_info in info_values:
         road_types = []
@@ -164,21 +173,13 @@ def testing(narratives,classifications,info_values):
 
 
     # Encode the informational variables
-    # print(info_types)
-    # print(len(info_types))
-    # print(len(info_types[0]))
-    # print(len(encoded_info[0]))
-
-    # Split the encoded_info into separate variables for each road
-    # Encode the informational variables for each road
+    # This loop takes the information in info_types and encodes based on each grouped informational value.
+    # This can then be processed by SciKit.
     encoded_info_roads = []
     for road_info in info_types:
-        print(len(road_info))
         mlb = MultiLabelBinarizer()
         encoded_info = mlb.fit_transform(road_info)
         encoded_info_roads.append(encoded_info)
-        # print((encoded_info_roads[0]))
-    # print(mlb.classes_)
 
     # Combine the encoded informational variables with X_narratives
     feature_matrices = [X_narratives]
@@ -186,23 +187,27 @@ def testing(narratives,classifications,info_values):
         encoded_info_sparse = sp.csr_matrix(encoded_info)
         feature_matrices.append(encoded_info_sparse)
 
+    # Converts encoded data into a data matrix
     X_combined = sp.hstack(feature_matrices)
 
-    # Split the data into training and testing sets
+    # Split the data into training and testing sets.
+    # This automatically takes the combined matrix and classifications and creates a testing set out of 20 percent of the data entered. random_state = 42 just tells the code to generate test cases randomly.
     X_train, X_test, y_train, y_test = train_test_split(X_combined, classifications, test_size=0.2, random_state=42)
     
-    
+    # Instantiate and train the RandomForestClassifier
+    classifier = RandomForestClassifier()
+
+
+    # Create a testing grid.
+    # n_estimators = Forest Size
+    # max_depth = Number of decisions each forest has to make
     param_grid = {
     'n_estimators': [200, 300, 500, 600, 800],
     'max_depth': [25, 50, 75, 100, 125]
     }
 
-
-
-    # Instantiate and train the logistic regression classifier
-    classifier = RandomForestClassifier()
     # Checking efficienceies of each parameter combinaion
-
+    # cv = the number of tries it does for each parameter. more accuracy higher number, but takes a lot longer to process.
     grid_search = GridSearchCV(classifier, param_grid, cv=6)
     grid_search.fit(X_train, y_train)
 
@@ -231,19 +236,9 @@ def testing(narratives,classifications,info_values):
         print()
     
     # Return the best model
-    return best_model, vectorizer, label_encoder
-# print(classify)
+    return best_model, vectorizer
 # endregion
 
 
 # RUNNING THE CODE
-# print(len(info))
-# print(info.shape)
-# print(RoadwaySystem.shape)
-# print(info[0].shape)
-# print(narrative_array.shape)
-# print(classify.shape)
-# print(classify)
-# print(info.shape)
-# print(info)
-best_model, vectorizer, label_encoder = testing(narrative_array,classify,info)
+best_model, vectorizer = testing(narrative_array,classify,info)
