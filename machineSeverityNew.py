@@ -39,19 +39,20 @@ dataset_limit (int) - An integer limiting the number of datapoints to 50. Can be
 '''
 
 
-Field = 'Road Class'
-specs = np.array(["CityStreet","CountyRoad","FarmToMarket","Interstate","NonTrafficway","OtherRoads","Tollway","US&StateHighways"])
-classifiers = np.array(["CITY STREET", "COUNTY ROAD", "FARM TO MARKET", "INTERSTATE", "NON-TRAFFICWAY", "OTHER ROADS", "TOLLWAY", "US & STATE HIGHWAYS"])
+Field = 'Severity'
+specs = np.array(["Fatal","Non"])
+classifiers = np.array(["K - FATAL INJURY","N - NOT INJURED"])
 
-RoadwaySystem = []
-OutsideCL = []
-TollRoad = []
+speed = []
+light = []
+weather = []
 info = np.array([])
-columns = ['B','C','E']
+columns = ['B','C','D']
 dataset_limit = 50
 
 # Read the Excel spreadsheet
 directory_path = 'crashes/'+Field+'/excel'
+total_size = 0
 
 for file_name in os.listdir(directory_path):
     file_path = os.path.join(directory_path, file_name)
@@ -60,20 +61,23 @@ for file_name in os.listdir(directory_path):
     for column in columns:
         df = pd.read_excel(file_path, usecols=column, skiprows=2, nrows=dataset_limit)
         values = df.values.flatten().tolist()
+        total_size = total_size+len(values)
         file_values.append(values)  # Append values to the file array
     
-    RoadwaySystem.extend(file_values[0])  # Extend RoadwaySystem array
-    OutsideCL.extend(file_values[1])  # Extend OutsideCL array
-    TollRoad.extend(file_values[2])  # Extend TollRoad array
+    speed.extend(file_values[0])  # Extend RoadwaySystem array
+    light.extend(file_values[1])  # Extend OutsideCL array
+    weather.extend(file_values[2])  # Extend TollRoad array
 
 # Convert lists to NumPy arrays
-RoadwaySystem = np.array(RoadwaySystem)
-OutsideCL = np.array(OutsideCL)
-TollRoad = np.array(TollRoad)
+speed = np.array(speed)
+light = np.array(light)
+weather = np.array(weather)
+
 
 # Create info array and reshape it
-info = np.array([RoadwaySystem, OutsideCL, TollRoad])
-info = info.reshape(3, 341)
+info = np.array([speed, light, weather])
+total_size = int(total_size/len(info))
+info = info.reshape(len(columns), total_size)
 # endregion
 
 # region READING TEXT INTO PROGRAM
@@ -149,21 +153,21 @@ import scipy.sparse as sp
 
 def testing(narratives,classifications,info_values):
     # Checking sizes (EXTRA CODE FOR CHECKING, NOT NEEDED)
-    # print(len(info_values))
-    # print(len(info_values[0]))
-    # print(len(info_values[1]))
-    # print(len(info_values[2]))
-    # print(len(classifications))
-    # print(len(narratives))
-    print(narratives[99])
-    print(classifications[99])
+    print(len(info_values))
+    print(len(info_values[0]))
+    print(len(info_values[1]))
+    print(len(info_values[2]))
+    print(len(classifications))
+    print(len(narratives))
+    print(classifications[49])
+    print(classifications[50])
+    print(classifications[51])
 
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
 
     # Transforms the narratives to numerical data that is then analyzed by SciKit.
     X_narratives = vectorizer.fit_transform(narratives)
-    # print(X_narratives.shape)
     # print(vectorizer.vocabulary_)
 
     # Prepare the data for MultiLabelBinarizer. This takes your information and makes it a string with number of dimensions categorized by the informational values.
@@ -221,13 +225,12 @@ def testing(narratives,classifications,info_values):
     y_pred = best_model.predict(X_test)
 
     # Print narratives, predicted labels, and actual labels
-    for narrative, classification, pred_label, actual_label in zip(narratives, classifications, y_pred, y_test):
+    for narrative, pred_label, actual_label in zip(narratives, y_pred, y_test):
         print("Narrative:", narrative)
-        print("Classification:", classification)
         print("Predicted Label:", pred_label)
         print("Actual Label:", actual_label)
         print()
-
+        
     # Evaluate the model's performance
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, average='weighted')
@@ -245,6 +248,4 @@ def testing(narratives,classifications,info_values):
 
 
 # RUNNING THE CODE
-# print(classify)
-# print(narrative_array[101])
 best_model, vectorizer = testing(narrative_array,classify,info)
