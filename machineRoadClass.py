@@ -217,6 +217,13 @@ def testing(narratives,classifications,info_values):
     # Make predictions on the testing set
     y_pred = best_model.predict(X_test)
 
+    # Print narratives, predicted labels, and actual labels
+    for narrative, pred_label, actual_label in zip(narratives, y_pred, y_test):
+        print("Narrative:", narrative)
+        print("Predicted Label:", pred_label)
+        print("Actual Label:", actual_label)
+        print()
+        
     # Evaluate the model's performance
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, average='weighted')
@@ -227,13 +234,6 @@ def testing(narratives,classifications,info_values):
     print("Precision:", precision)
     print("Recall:", recall)
     print("F1-score:", f1)
-
-    # Print narratives, predicted labels, and actual labels
-    for narrative, pred_label, actual_label in zip(narratives, y_pred, y_test):
-        print("Narrative:", narrative)
-        print("Predicted Label:", pred_label)
-        print("Actual Label:", actual_label)
-        print()
     
     # Return the best model
     return best_model, vectorizer
