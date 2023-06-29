@@ -22,14 +22,14 @@ Reports downloaded top to bottom based on crash ID
 
 # region WHAT NEEDS TO BE CHANGED
 Field = 'Road Class'
-specs = ["CityStreet","CountyRoad","FarmToMarket","Interstate","NonTrafficway","OtherRoads","Tollway","US&StateHighways"]
-classifiers = ["CITY STREET", "COUNTY ROAD", "FARM TO MARKET", "INTERSTATE", "NON-TRAFFICWAY", "OTHER ROADS", "TOLLWAY", "US & STATE HIGHWAYS"]
+specs = np.array(["CityStreet","CountyRoad","FarmToMarket","Interstate","NonTrafficway","OtherRoads","Tollway","US&StateHighways"])
+classifiers = np.array(["CITY STREET", "COUNTY ROAD", "FARM TO MARKET", "INTERSTATE", "NON-TRAFFICWAY", "OTHER ROADS", "TOLLWAY", "US & STATE HIGHWAYS"])
 
 RoadwaySystem = []
 OutsideCL = []
 TollRoad = []
 info_variables = ["RoadwaySystem", "OutsideCL", "TollRoad"]
-info = [RoadwaySystem, OutsideCL, TollRoad]
+info = np.array([])
 columns = ['B','C','E']
 dataset_limit = 50
 # endregion
@@ -48,14 +48,28 @@ for file_name in os.listdir(directory_path):
     file_values = []  # New array for each file
     
     for column in columns:
-        df = pd.read_excel(file_path, usecols=column, skiprows=2, nrows = dataset_limit)
+        df = pd.read_excel(file_path, usecols=column, skiprows=2, nrows=dataset_limit)
         values = df.values.flatten().tolist()
         file_values.append(values)  # Append values to the file array
         
-    RoadwaySystem.append(file_values[0])  # Append file array to RoadwaySystem
-    OutsideCL.append(file_values[1])  # Append file array to OutsideCL
-    TollRoad.append(file_values[2])  # Append file array to TollRoad
+    RoadwaySystem.extend(file_values[0])  # Extend RoadwaySystem array
+    OutsideCL.extend(file_values[1])  # Extend OutsideCL array
+    TollRoad.extend(file_values[2])  # Extend TollRoad array
 
+# Convert lists to NumPy arrays
+RoadwaySystem = np.array(RoadwaySystem)
+OutsideCL = np.array(OutsideCL)
+TollRoad = np.array(TollRoad)
+
+# print(RoadwaySystem.shape)
+
+# Create info array and reshape it
+info = np.array([RoadwaySystem, OutsideCL, TollRoad])
+info = info.reshape(3, 341)
+
+# print(info.shape)
+# print(info)
+# print(info[0].shape)
 # endregion
 
 # region READING TEXT INTO PROGRAM
@@ -68,11 +82,13 @@ def get_file_names(folder_path):
     return file_names
 
 # FULL ARRAY
-narrative_array = []
+narrative_array = np.array([])
+# used to create classifications array
+sizer = []
 
 for spec in specs:
     # print(spec)
-    narrative_line = []
+    narrative_line = np.array([])
     folder_path ='liftedText/'+Field+"/"+spec  # REPLACE THIS IF THE PDFs ARE STORED ELSEWHERE
     file_names = get_file_names(folder_path)
 
@@ -84,34 +100,37 @@ for spec in specs:
             lines = file.read()
             text_string = lines.replace("\n", " ")
             text_string = text_string.upper()
-            narrative_line.append(text_string)
+            narrative_line = np.append(narrative_line, text_string)
+    sizer.append(len(narrative_line))
+
     # Adding to main matrix
-    narrative_array.append(narrative_line)
+    narrative_array = np.append(narrative_array, narrative_line, axis = 0)
 
 
 groups = len(narrative_array)
 # print(groups)
 values = len(narrative_array[0])
 # print(values)
-total = []
-classify = []
+classify = np.array([])
+total = np.array([])
 
-
-for run in range(0,len(narrative_array)):
-    for assign in range(0,len(narrative_array[run])):
-        # print(assign)
-        classify.append(classifiers[run])
-        total.append(narrative_array[run][assign])
+for run in range(len(classifiers)):
+    for assign in range(sizer[run]):
+        classify = np.append(classify, classifiers[run])
+        # total = np.append(total, narrative_array[run][assign])
 # print(len(total))
 # print(classify)
 
 # endregion
 
 
+
+
+
 # region MACHINE LEARNING MODULE
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import cross_val_score
@@ -119,9 +138,15 @@ import scipy.sparse as sp
 import re
 # # # ACTUAL DATA PROCESSING STUFF
 
-def testing(narratives,classifications, info_variables, info_values):
-    # print(info_variables)
-    print(len(info_values))
+def testing(narratives,classifications,info_values):
+    # Checking sizes
+    # print(len(info_values))
+    # print(len(info_values[0]))
+    # print(len(info_values[1]))
+    # print(len(info_values[2]))
+    # print(len(classifications))
+    # print(len(narratives))
+
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
 
@@ -129,25 +154,38 @@ def testing(narratives,classifications, info_variables, info_values):
     X_narratives = vectorizer.fit_transform(narratives)
     # print(vectorizer.vocabulary_)
 
+    # Prepare the data for MultiLabelBinarizer
+    info_types = []
+    for road_info in info_values:
+        road_types = []
+        for type_data in road_info:
+            road_types.append(type_data)
+        info_types.append(road_types)
+
+
     # Encode the informational variables
-    label_encoders = {}
-    encoded_info = []
-    label_encoder = LabelEncoder()
+    # print(info_types)
+    # print(len(info_types))
+    # print(len(info_types[0]))
+    # print(len(encoded_info[0]))
 
+    # Split the encoded_info into separate variables for each road
+    # Encode the informational variables for each road
+    encoded_info_roads = []
+    for road_info in info_types:
+        print(len(road_info))
+        mlb = MultiLabelBinarizer()
+        encoded_info = mlb.fit_transform(road_info)
+        encoded_info_roads.append(encoded_info)
+        # print((encoded_info_roads[0]))
+    # print(mlb.classes_)
 
+    # Combine the encoded informational variables with X_narratives
+    feature_matrices = [X_narratives]
+    for encoded_info in encoded_info_roads:
+        encoded_info_sparse = sp.csr_matrix(encoded_info)
+        feature_matrices.append(encoded_info_sparse)
 
-    # PROBLEM CHILD
-    for info_set in info_values:
-        encoded_values = []
-        for info in info_set:
-            info = np.array(info, ndmin=1)  # Convert to 1D array
-            encoded_value = label_encoder.fit_transform(info)
-            encoded_values.append(encoded_value)
-        encoded_info.append(encoded_values)
-    
-    # print(len(encoded_info))
-    # Combine the narrative features and encoded informational variables
-    feature_matrices = [X_narratives] + [sp.vstack(info).T for info in encoded_info]
     X_combined = sp.hstack(feature_matrices)
 
     # Split the data into training and testing sets
@@ -199,5 +237,13 @@ def testing(narratives,classifications, info_variables, info_values):
 
 
 # RUNNING THE CODE
-print(len(info))
-best_model, vectorizer, label_encoder = testing(total,classify,info_variables,info)
+# print(len(info))
+# print(info.shape)
+# print(RoadwaySystem.shape)
+# print(info[0].shape)
+# print(narrative_array.shape)
+# print(classify.shape)
+# print(classify)
+# print(info.shape)
+# print(info)
+best_model, vectorizer, label_encoder = testing(narrative_array,classify,info)
