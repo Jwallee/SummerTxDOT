@@ -18,7 +18,7 @@ def find_string_in_documents(string, documents):
     return found_documents
 
 folder_path = 'liftedText/Road Class/CountyRoad'  # Specify the path to the folder containing the text files
-search_string = "UNIT 1 WAS TRAVELING EAST BOUND ON PEARCE LANE."  # Specify the string you want to search for
+search_string = "SINGLE VEHICLE COLLISION WITH GUARD RAIL. UPON OBSERVATION"  # Specify the string you want to search for
 
 documents = read_files_in_folder(folder_path)
 found_docs = find_string_in_documents(search_string, documents)

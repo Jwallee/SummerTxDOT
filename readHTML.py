@@ -1,5 +1,5 @@
 # Path to the Excel file stored in crashes/excel
-excel_file = 'RoadClassAug2022US&STATEHIGHWAYS.xlsx'
+excel_file = 'RoadClassAug2022OTHERROADS.xlsx'
 
 def download(crash):
     import webbrowser

@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import warnings
+import random
 from openpyxl import Workbook
 # Filter out the specific warning
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl.styles.stylesheet")
@@ -49,6 +50,10 @@ TollRoad = []
 info = np.array([])
 columns = ['B','C','E']
 dataset_limit = 50
+
+# Set the range and generate a random integer
+tests = 10
+
 
 # Read the Excel spreadsheet
 directory_path = 'crashes/'+Field+'/excel'
@@ -123,7 +128,6 @@ for run in range(len(classifiers)):
 
 # endregion
 
-
 # region MACHINE LEARNING MODULE
 '''
 Region Definitions:
@@ -141,12 +145,12 @@ def testing(narratives,classifications,info_values):
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.preprocessing import MultiLabelBinarizer, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import scipy.sparse as sp
+import random
 # # # ACTUAL DATA PROCESSING STUFF
-
 def testing(narratives,classifications,info_values):
     # Checking sizes (EXTRA CODE FOR CHECKING, NOT NEEDED)
     # print(len(info_values))
@@ -155,8 +159,6 @@ def testing(narratives,classifications,info_values):
     # print(len(info_values[2]))
     # print(len(classifications))
     # print(len(narratives))
-    print(narratives[99])
-    print(classifications[99])
 
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()
@@ -193,10 +195,6 @@ def testing(narratives,classifications,info_values):
     # Converts encoded data into a data matrix
     X_combined = sp.hstack(feature_matrices)
 
-    # Split the data into training and testing sets.
-    # This automatically takes the combined matrix and classifications and creates a testing set out of 20 percent of the data entered. random_state = 42 just tells the code to generate test cases randomly.
-    X_train, X_test, y_train, y_test = train_test_split(X_combined, classifications, test_size=0.2, random_state=42)
-    
     # Instantiate and train the RandomForestClassifier
     classifier = RandomForestClassifier()
 
@@ -209,6 +207,23 @@ def testing(narratives,classifications,info_values):
     'max_depth': [25, 50, 75, 100, 125]
     }
 
+    # Generating Random Test numbers to grab random narratives and classifications
+    randoms = []
+    for i in range(1,tests):
+        randoms.append(random.randint(0, len(narratives)-1))
+    
+    # Everything not involved in testing is put into others
+    others = []
+    for a in range(len(narratives)):
+        if a in randoms:
+            a
+        else:
+            others.append(a)
+        
+    # Creating Training data from the generated random numbers
+    X_train = X_combined[others]
+    y_train = classifications[others]
+
     # Checking efficienceies of each parameter combinaion
     # cv = the number of tries it does for each parameter. more accuracy higher number, but takes a lot longer to process.
     grid_search = GridSearchCV(classifier, param_grid, cv=6)
@@ -217,15 +232,14 @@ def testing(narratives,classifications,info_values):
     # Get the best model from grid search
     best_model = grid_search.best_estimator_
 
-    # Make predictions on the testing set
+    X_test = X_combined[randoms]
+    y_test = classifications[randoms]
     y_pred = best_model.predict(X_test)
 
-    # Print narratives, predicted labels, and actual labels
-    for narrative, classification, pred_label, actual_label in zip(narratives, classifications, y_pred, y_test):
-        print("Narrative:", narrative)
-        print("Classification:", classification)
-        print("Predicted Label:", pred_label)
-        print("Actual Label:", actual_label)
+    for a in range(0,len(randoms)):
+        print("Narrative:", narratives[randoms[a]])
+        print("Predicted Label:", y_pred[a])
+        print("Actual Label:", classifications[randoms[a]])
         print()
 
     # Evaluate the model's performance
@@ -245,6 +259,4 @@ def testing(narratives,classifications,info_values):
 
 
 # RUNNING THE CODE
-# print(classify)
-# print(narrative_array[101])
 best_model, vectorizer = testing(narrative_array,classify,info)
