@@ -78,7 +78,7 @@ TollRoad = np.array(TollRoad)
 
 # Create info array and reshape it
 info = np.array([RoadwaySystem, OutsideCL, TollRoad])
-info = info.reshape(3, 341)
+info = info.reshape(len(info), len(info[0]))
 # endregion
 
 # region READING TEXT INTO PROGRAM
@@ -226,7 +226,7 @@ def testing(narratives,classifications,info_values):
 
     # Checking efficienceies of each parameter combinaion
     # cv = the number of tries it does for each parameter. more accuracy higher number, but takes a lot longer to process.
-    grid_search = GridSearchCV(classifier, param_grid, cv=6)
+    grid_search = GridSearchCV(classifier, param_grid, cv=7)
     grid_search.fit(X_train, y_train)
 
     # Get the best model from grid search
