@@ -15,6 +15,7 @@ def testing(narratives,classifications,info_values):
 
 # # # ACTUAL DATA PROCESSING STUFF
 def testing(narratives,classifications,info_values,tests,classes):
+    from time import sleep, time
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.model_selection import train_test_split, GridSearchCV
     from sklearn.preprocessing import MultiLabelBinarizer, LabelEncoder
@@ -27,6 +28,7 @@ def testing(narratives,classifications,info_values,tests,classes):
     from openpyxl import Workbook
     # Filter out the specific warning
     warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl.styles.stylesheet")
+    warnings.filterwarnings("ignore", category=UserWarning)
 
     print("Recieved Data. Running testing funcion with "+str(len(narratives))+" training datas and "+str(tests)+" tests.")
 
@@ -96,7 +98,7 @@ def testing(narratives,classifications,info_values,tests,classes):
 
     # Checking efficienceies of each parameter combinaion
     # cv = the number of tries it does for each parameter. more accuracy higher number, but takes a lot longer to process.
-    grid_search = GridSearchCV(classifier, param_grid, cv=7)
+    grid_search = GridSearchCV(classifier, param_grid, cv=3)
     grid_search.fit(X_train, y_train)
 
     # Get the best model from grid search

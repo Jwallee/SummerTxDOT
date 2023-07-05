@@ -2,8 +2,10 @@
 import os
 import pandas as pd
 from testing import testing
+from halo import Halo
 
-
+spinner = Halo(text='', spinner='dots3')
+spinner.start()
 # MASTER METHOD
 def load_data(narratives_filepath, fields_folder_filepath, field_columns, classification_field_column):
     narrative_dictionary = read_narratives(narratives_filepath)
@@ -108,3 +110,4 @@ fields_array, classifications_array, narratives_array = take_sample(fields_array
 tests = 10
 classes = ["blank","Interstate","US & State Highways", "Farm to Market", "County Road","City Street","Tollways","Other Roads", "Tollbridges","Non-Trafficway"]
 testing(narratives_array,classifications_array,fields_array,tests,classes)
+spinner.stop()
