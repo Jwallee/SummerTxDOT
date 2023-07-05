@@ -143,22 +143,15 @@ def testing(narratives,classifications,info_values):
             Within each of those three values are 341 (the number of narratives) pieces of information that match the narratives and classifiers.
 '''
 
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import MultiLabelBinarizer, LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-import scipy.sparse as sp
-import random
 # # # ACTUAL DATA PROCESSING STUFF
 def testing(narratives,classifications,info_values):
-    # Checking sizes (EXTRA CODE FOR CHECKING, NOT NEEDED)
-    # print(len(info_values))
-    # print(len(info_values[0]))
-    # print(len(info_values[1]))
-    # print(len(info_values[2]))
-    # print(len(classifications))
-    # print(len(narratives))
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.model_selection import train_test_split, GridSearchCV
+    from sklearn.preprocessing import MultiLabelBinarizer, LabelEncoder
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+    import scipy.sparse as sp
+    import random
 
     # Initialize the CountVectorizer
     vectorizer = CountVectorizer()

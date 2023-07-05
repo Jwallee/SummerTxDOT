@@ -1,6 +1,7 @@
 ### handles data preprocessing from large crash extracts in order to run ML algorithms
 import os
 import pandas as pd
+from testing import testing
 
 
 # MASTER METHOD
@@ -92,14 +93,18 @@ def take_sample(fields_array, classifications_array, narratives_array, size):
     return fields_sample_array, classifications_array[0:size], narratives_array[0:size]
 
 
-# # testing
-# file_path_to_narratives_file = "C:\\Users\\aseibel\\Documents\\investigator_narrative.csv"
-# file_path_to_fields_folder = "C:\\Users\\aseibel\\Documents\\extract_public_2023_20230629162130066_92029_20220101-20220630Texas\\crash"
+# testing
+file_path_to_narratives_file = "narratives\\investigator_narrative.csv"
+file_path_to_fields_folder = "C:\\Users\\JROBINET\\Documents\\GitHub\\SummerTxDOT\\fields\\crash_dat"
 
-# field_columns = [14, 18, 27, 79, 83] # o (outside city limits), s (reported roadway system id), ab (toll), cb (highway sys), cf (street name)
+field_columns = [14, 18, 27, 79, 83] # o (outside city limits), s (reported roadway system id), ab (toll), cb (highway sys), cf (street name)
 
-# fields_array, classifications_array, narratives_array = load_data(file_path_to_narratives_file, file_path_to_fields_folder, field_columns, 71) # 71 is road class column
+fields_array, classifications_array, narratives_array = load_data(file_path_to_narratives_file, file_path_to_fields_folder, field_columns, 71) # 71 is road class column
 
-# fields_array, classifications_array, narratives_array = take_sample(fields_array, classifications_array, narratives_array, 10)
+fields_array, classifications_array, narratives_array = take_sample(fields_array, classifications_array, narratives_array, 100) # Choosing 100 random tests from the narratives/classifications
 
-# # print(fields_array, classifications_array, narratives_array)
+# print(fields_array, classifications_array, narratives_array)
+
+tests = 10
+classes = ["blank","Interstate","US & State Highways", "Farm to Market", "County Road","City Street","Tollways","Other Roads", "Tollbridges","Non-Trafficway"]
+testing(narratives_array,classifications_array,fields_array,tests,classes)

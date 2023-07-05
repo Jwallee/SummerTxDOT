@@ -2,4 +2,8 @@
 *.txt
 *.jpg
 *.xlsx
+*.csv
+*.zip
+*.xml
+*.pyc
 ExtraCode.py
