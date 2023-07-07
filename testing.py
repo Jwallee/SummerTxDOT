@@ -18,6 +18,7 @@ def testing(narratives,classifications,info_values,tests,classes,cv_value):
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.model_selection import GridSearchCV
     from sklearn.preprocessing import MultiLabelBinarizer
+    from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
     import scipy.sparse as sp
@@ -31,7 +32,7 @@ def testing(narratives,classifications,info_values,tests,classes,cv_value):
     print("Recieved Data. Running testing funcion with "+str(len(narratives))+" training datas and "+str(tests)+" tests.")
 
     # Initialize the CountVectorizer
-    vectorizer = CountVectorizer()
+    vectorizer = TfidfVectorizer(max_df=0.95, min_df=2, stop_words="english")
 
     # Transforms the narratives to numerical data that is then analyzed by SciKit.
     X_narratives = vectorizer.fit_transform(narratives)
@@ -71,22 +72,13 @@ def testing(narratives,classifications,info_values,tests,classes,cv_value):
     # n_estimators = Forest Size
     # max_depth = Number of decisions each forest has to make
     param_grid = {
-    'n_estimators': [300, 500, 600, 800],
-    'max_depth': [25, 50, 75, 100, 125]
+    'n_estimators': [600, 800],
+    'max_depth': [100, 125]
     }
 
-    # Generating Random Test numbers to grab random narratives and classifications
-    randoms = []
-    for i in range(1,tests):
-        randoms.append(random.randint(0, len(narratives)-1))
-    
-    # Everything not involved in testing is put into others
-    others = []
-    for a in range(len(narratives)):
-        if a in randoms:
-            a
-        else:
-            others.append(a)
+    randoms = random.sample(range(1, len(narratives) - 1), tests)
+
+    others = [a for a in range(len(narratives)) if a not in randoms]
         
     # Creating Training data from the generated random numbers
     X_train = sp.vstack([X_combined.getrow(i) for i in others])
@@ -105,25 +97,65 @@ def testing(narratives,classifications,info_values,tests,classes,cv_value):
     X_test = sp.vstack([X_combined.getrow(i) for i in randoms])
     y_test = [classifications[i] for i in randoms]
     y_test = np.array(y_test)
-    # y_test = classifications[randoms]
     y_pred = best_model.predict(X_test)
+    y_pred_probs = best_model.predict_proba(X_test)
+    y_pred_confidence = np.max(y_pred_probs, axis=1)
 
+    confidence_threshold = 0.75
+    # Tag test cases as confident or unconfident based on the threshold
+    tagged_test_cases = []
+    for i in range(len(randoms)):
+        if y_pred_confidence[i] >= confidence_threshold:
+            tag = "Confident"
+        else:
+            tag = "Unconfident"
+        tagged_test_cases.append((narratives[randoms[i]], classes[y_pred[i]], classes[classifications[randoms[i]]], tag))
+
+    unconfident = []
     for a in range(0,len(randoms)):
         print("Narrative:", narratives[randoms[a]])
         print("Predicted Label:", classes[y_pred[a]])
         print("Actual Label:", classes[classifications[randoms[a]]])
+        if tagged_test_cases[a][-1] == "Unconfident":
+            unconfident.append(a)
+        print("Tag:", tagged_test_cases[a][-1])
         print()
 
     # Evaluate the model's performance
-    accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred, average='weighted')
-    recall = recall_score(y_test, y_pred, average='weighted')
-    f1 = f1_score(y_test, y_pred, average='weighted')
+    correct_count = 0
+    wrong_count = 0
 
-    print("Accuracy:", accuracy)
-    print("Precision:", precision)
-    print("Recall:", recall)
-    print("F1-score:", f1)
+    confident_yes = 0
+    confident_no = 0
+    for i in range(len(y_test)):
+        if y_test[i] == y_pred[i]:
+            if i in unconfident:
+                pass
+            else:
+                confident_yes += 1
+            correct_count += 1
+        else:
+            if i in unconfident:
+                pass
+            else:
+                confident_no += 1
+            wrong_count += 1
+
+    print("Correct predictions:", correct_count)
+    print("Wrong predictions:", wrong_count)
+    accuracy = correct_count/len(y_test)
+    accuracy = round(accuracy, 2)
+    print("Accuracy:", accuracy,"[",correct_count,"out of",len(y_test),"]")
+    print("Confidence Correct:", confident_yes)
+    print("Confidence Wrong:", confident_no)
+    ave = confident_yes+confident_no
+    print("Confidence Accuracy:",confident_yes/ave)
+
+    precision = precision_score(y_test, y_pred, average='weighted')
+    print("Precision:", round(precision,2))
+
+    print("Unconfident in these test cases: ",unconfident)
+    print("Confidence Rating:", round((len(randoms)-len(unconfident))/len(randoms),2))
     
     # Return the best model
     return best_model, vectorizer

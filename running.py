@@ -177,4 +177,4 @@ print("Training Size:", training_size)
 print("Testing Size:", testing_size)
 print("Cross Check Value:", cv_value)
 
-running(data_file1,data_folder2,testing_size,training_size,cv_value)
+running(data_file1,data_folder2,testing_size,training_size,cv_value,selected_field)

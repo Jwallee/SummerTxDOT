@@ -93,7 +93,7 @@ def take_sample(fields_array, classifications_array, narratives_array, size):
     print("Random sample of size "+str(size)+" taken successfully.")
     return fields_sample_array, classifications_array[0:size], narratives_array[0:size]
 
-def running(narr,fields,tests,size,cv_value):
+def running(narr,fields,tests,size,cv_value,field):
     start_time = time.time()
     spinner = Halo(text='', spinner='dots3')
     spinner.start()
@@ -103,6 +103,17 @@ def running(narr,fields,tests,size,cv_value):
 
     field_columns = [14, 18, 27, 79, 83] # o (outside city limits), s (reported roadway system id), ab (toll), cb (highway sys), cf (street name)
 
+    # # region  Bridge Detail
+    # if field == "Bridge Detail":
+    #     field_columns = [32, 18, 27, 79, 83] # Street Description, Damaged Property
+    #     print(field)
+    # elif field == "First Harmful Event":
+    #     print(field)
+    # # endregion
+
+
+
+
     fields_array, classifications_array, narratives_array = load_data(file_path_to_narratives_file, file_path_to_fields_folder, field_columns, 71) # 71 is road class column
 
     fields_array, classifications_array, narratives_array = take_sample(fields_array, classifications_array, narratives_array, size) # Choosing 100 random tests from the narratives/classifications
@@ -111,7 +122,7 @@ def running(narr,fields,tests,size,cv_value):
 
     classes = ["blank","Interstate","US & State Highways", "Farm to Market", "County Road","City Street","Tollways","Other Roads", "Tollbridges","Non-Trafficway"]
     # Define the time interval to print elapsed time (20 seconds in this example)
-    testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value)
+    a,b = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value)
     spinner.stop()
     end_time = time.time()
     execution_time = end_time - start_time  # Calculate the difference
