@@ -4,6 +4,7 @@ import pandas as pd
 from testing import testing
 from halo import Halo
 import time
+from sklearn.externals import joblib
 
 # MASTER METHOD
 def load_data(narratives_filepath, fields_folder_filepath, field_columns, classification_field_column):
@@ -122,7 +123,8 @@ def running(narr,fields,tests,size,cv_value,field):
 
     classes = ["blank","Interstate","US & State Highways", "Farm to Market", "County Road","City Street","Tollways","Other Roads", "Tollbridges","Non-Trafficway"]
     # Define the time interval to print elapsed time (20 seconds in this example)
-    a,b = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value)
+    model,b = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value)
+    joblib.dump(model, 'model_filename.pkl')
     spinner.stop()
     end_time = time.time()
     execution_time = end_time - start_time  # Calculate the difference

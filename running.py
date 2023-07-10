@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from load_data import running
+import winsound
 
 data_file1 = ""
 data_folder2 = ""
@@ -178,3 +179,5 @@ print("Testing Size:", testing_size)
 print("Cross Check Value:", cv_value)
 
 running(data_file1,data_folder2,testing_size,training_size,cv_value,selected_field)
+
+winsound.PlaySound('6-[AudioTrimmer.com].WAV', winsound.SND_FILENAME)
