@@ -6,4 +6,6 @@
 *.zip
 *.xml
 *.pyc
+*.pkl
 ExtraCode.py
+/models

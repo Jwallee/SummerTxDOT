@@ -4,7 +4,8 @@ import pandas as pd
 from testing import testing
 from halo import Halo
 import time
-from sklearn.externals import joblib
+import joblib
+import datetime
 
 # MASTER METHOD
 def load_data(narratives_filepath, fields_folder_filepath, field_columns, classification_field_column):
@@ -94,7 +95,7 @@ def take_sample(fields_array, classifications_array, narratives_array, size):
     print("Random sample of size "+str(size)+" taken successfully.")
     return fields_sample_array, classifications_array[0:size], narratives_array[0:size]
 
-def running(narr,fields,tests,size,cv_value,field):
+def running(narr,fields,tests,size,cv_value,field,prev_model_folder):
     start_time = time.time()
     spinner = Halo(text='', spinner='dots3')
     spinner.start()
@@ -117,14 +118,37 @@ def running(narr,fields,tests,size,cv_value,field):
 
     fields_array, classifications_array, narratives_array = load_data(file_path_to_narratives_file, file_path_to_fields_folder, field_columns, 71) # 71 is road class column
 
-    fields_array, classifications_array, narratives_array = take_sample(fields_array, classifications_array, narratives_array, size) # Choosing 100 random tests from the narratives/classifications
+    # fields_array, classifications_array, narratives_array2 = take_sample(fields_array, classifications_array, narratives_array, size) # Choosing 100 random tests from the narratives/classifications
 
     # print(fields_array, classifications_array, narratives_array)
 
     classes = ["blank","Interstate","US & State Highways", "Farm to Market", "County Road","City Street","Tollways","Other Roads", "Tollbridges","Non-Trafficway"]
     # Define the time interval to print elapsed time (20 seconds in this example)
-    model,b = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value)
-    joblib.dump(model, 'model_filename.pkl')
+    model,b,index,vectorizer,encoder = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value,prev_model_folder,size)
+    if b == False:
+        # Get the current date and time
+        current_time = datetime.datetime.now()
+        # Generate a formatted timestamp
+        timestamp = current_time.strftime("%Y-%m-%d_%H-%M-%S")
+
+        # Create the file name with the timestamp
+        folder = f"models/{timestamp}"
+        os.mkdir(folder)
+        filename_model = f"{timestamp}_model.pkl"
+        filename_vectorizer = f"{timestamp}_vectorizer.pkl"
+        filename_encoder = f"{timestamp}_encoder.pkl"
+        filename_index = f"{timestamp}_index.txt"
+
+        # Save the model and index to the folder
+        "Save the vectorizer to the folder with ending _vectorizer.pkl"
+        joblib.dump(vectorizer, f"{folder}/{filename_vectorizer}")
+        joblib.dump(model, f"{folder}/{filename_model}")
+        joblib.dump(encoder, f"{folder}/{filename_encoder}")
+        with open(f"{folder}/{filename_index}", "w") as f:
+            f.write(str(index))
+        print(f"Model saved to {folder}")
+    else:
+        print("Model not saved") 
     spinner.stop()
     end_time = time.time()
     execution_time = end_time - start_time  # Calculate the difference
