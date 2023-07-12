@@ -203,10 +203,7 @@ def testing(narratives, classifications, info_values, tests, classes, cv_value, 
             print("Confidence Correct:", confident_yes, file=file)
             print("Confidence Wrong:", confident_no)
             print("Confidence Wrong:", confident_no, file=file)
-            if confident_yes + confident_no == 0:
-                confidence_accuracy = 0
-            else:
-                confidence_accuracy = confident_yes / (confident_yes + confident_no)
+            confidence_accuracy = confident_yes / (confident_yes + confident_no)
             print("Confidence Accuracy:", confidence_accuracy)
             print("Confidence Accuracy:", confidence_accuracy, file=file)
             confidence_rating = round((len(test_indices) - len(unconfident)) / len(test_indices), 2)
@@ -224,7 +221,7 @@ def testing(narratives, classifications, info_values, tests, classes, cv_value, 
         # print(randoms2)
         
         # Return the best model
-        return model, model_loading, test_indices, vectorizer, encoder, output_file_path
+        return model, model_loading, test_indices, vectorizer, encoder
 
 
 

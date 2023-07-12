@@ -124,16 +124,22 @@ def running(narr,fields,tests,size,cv_value,field,prev_model_folder):
 
     classes = ["blank","Interstate","US & State Highways", "Farm to Market", "County Road","City Street","Tollways","Other Roads", "Tollbridges","Non-Trafficway"]
     # Define the time interval to print elapsed time (20 seconds in this example)
-    model,b,index,vectorizer,encoder = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value,prev_model_folder,size)
+    model,b,index,vectorizer,encoder, out = testing(narratives_array,classifications_array,fields_array,tests,classes,cv_value,prev_model_folder,size)
     if b == False:
         # Get the current date and time
         current_time = datetime.datetime.now()
         # Generate a formatted timestamp
         timestamp = current_time.strftime("%Y-%m-%d_%H-%M-%S")
 
-        # Create the file name with the timestamp
+        # Create the folder with the timestamp
         folder = f"models/{timestamp}"
-        os.mkdir(folder)
+        os.makedirs(folder, exist_ok=True)
+
+        # Move the output file to the folder
+        new_output_file_path = os.path.join(folder, os.path.basename(out))
+        os.rename(out, new_output_file_path)
+        print(f"Output file moved to {new_output_file_path}")
+
         filename_model = f"{timestamp}_model.pkl"
         filename_vectorizer = f"{timestamp}_vectorizer.pkl"
         filename_encoder = f"{timestamp}_encoder.pkl"
@@ -152,4 +158,4 @@ def running(narr,fields,tests,size,cv_value,field,prev_model_folder):
     spinner.stop()
     end_time = time.time()
     execution_time = end_time - start_time  # Calculate the difference
-    print(f"Execution time: {execution_time} seconds")
+    print(f"Total Execution time: {execution_time} seconds")
