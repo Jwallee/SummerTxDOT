@@ -210,7 +210,17 @@ print("Testing Size:", testing_size)
 print("Cross Check Value:", cv_value)
 print("Trained Model Folder:", model_folder)
 
-# while training_size <= 100000:
-running(data_file1,data_folder2,testing_size,training_size,cv_value,selected_field,model_folder)
-    # training_size = training_size + 5000
-winsound.PlaySound('6-[AudioTrimmer.com].WAV', winsound.SND_FILENAME)
+from win10toast import ToastNotifier
+toaster = ToastNotifier()
+while training_size <= 100000:
+    toaster.show_toast("Code Started for "+str(training_size), "Your code has started running!")
+    running(data_file1,data_folder2,testing_size,training_size,cv_value,selected_field,model_folder)
+    # Code execution completed
+    toaster.show_toast("Code Done for "+str(training_size), "Your code has finished running!")
+    training_size = training_size + 5000
+
+# toaster.show_toast("Code Started for "+str(training_size), "Your code has started running!")
+# running(data_file1,data_folder2,testing_size,training_size,cv_value,selected_field,model_folder)
+# # Code execution completed
+# toaster.show_toast("Code Done for "+str(training_size), "Your code has finished running!")
+# winsound.PlaySound('6-[AudioTrimmer.com].WAV', winsound.SND_FILENAME)
