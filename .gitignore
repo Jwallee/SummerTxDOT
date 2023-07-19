@@ -1,0 +1,6 @@
+*.csv
+damages
+fields
+narratives
+models
+*.joblib
