@@ -1,8 +1,0 @@
-Road Class
-C:\Users\JROBINET\Documents\GitHub\txdot_interpreted_fields\narratives\investigator_narrative.csv
-C:\Users\JROBINET\Documents\GitHub\txdot_interpreted_fields\fields\crash_dat
-C:\Users\JROBINET\Documents\GitHub\txdot_interpreted_fields\damages
-C:\Users\JROBINET\Documents\GitHub\txdot_interpreted_fields\units
-True
-models/Road Class_20000_20230719-150908.joblib
-3000

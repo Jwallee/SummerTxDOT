@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  app:
+    build: ./app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - tensorflow-serving
+
+  tensorflow-serving:
+    image: tensorflow/serving
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./models/model:/models/model
+      - ./models/models.config:/models/models.config
+    command: ["--model_config_file=/models/models.config", "--rest_api_port=8501", "--model_name=model"]
+    environment:
+      - MODEL_NAME=model

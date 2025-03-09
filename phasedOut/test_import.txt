@@ -1,0 +1,5 @@
+True
+Intersection Related
+C:\Users\JROBINET\Documents\GitHub\txdot_interpreted_fields\crash_data_2.csv
+10000
+C:\Users\JROBINET\Documents\GitHub\txdot_interpreted_fields\models\intersection_related_100000.joblib

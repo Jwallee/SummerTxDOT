@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CrashData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="\\txdotapp1\TxDOT\TxDOT_XML\20101115_crisV7InterpretedFields.xsd">
+  <Version>9IF</Version>
+  <SubmittalInformation>
+    <FormType ID="" />
+    <SubmittingAgency></SubmittingAgency>
+    <SubmittalDate></SubmittalDate>
+    <SubmissionSource ID="" />
+  </SubmittalInformation>
+  <InterpretedFields>
+    <RoadwayRelation ID="" />
+    <IntersectionRelated ID="" />
+    <RoadClass ID="" />
+    <FirstHarmfulEvent ID="" />
+    <MannerOfCollision ID="" />
+    <ObjectStruck ID="" />
+    <PhysicalFeature1 ID="" />
+    <PhysicalFeature2 ID="" />
+    <BridgeDetail ID="" />
+    <OtherFactor ID="" />
+    <RoadwayPart ID="" />
+  </InterpretedFields>
+  <CrashIdentification>
+    <CrashID></CrashID>
+  </CrashIdentification>
+  <Units>
+    <Unit UnitNumber="">
+      <FirstHarmfulEventInvolved ID="" />
+      <DirectionOfTravel></DirectionOfTravel>
+      <AutonomousUnit ID=""/>
+      <Escooter ID=""/>
+      <PBCATPedalcyclist ID=""/>
+      <PBCATPedestrian ID=""/>
+      <PedalcyclistAction ID=""/>
+      <PedestrianAction ID=""/>
+	</Unit>
+  </Units>
+</CrashData>

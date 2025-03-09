@@ -1,0 +1,21 @@
+just a placeholder so the folder appears in the repo lol
+
+What is dataLocal?
+
+For me, I kept seeing how we use files in reference to the root user, so I wanted to fix it so it can be used in any context.
+
+You load all the data into the dataLocal folder, so the referneced filepaths do not change between users, because it's relative to the project, not the user.
+
+For example, change something like [crash_training_data_filepath = r"C:\Users\aseibel\Documents\data\crash_data_1.csv"] to
+[
+import os
+
+# Get the directory of the running script
+current_directory = os.path.dirname(__file__)
+
+# Construct the relative path to the data file
+crash_training_data_filepath = os.path.join(current_directory, 'dataLocal', 'crash_data_1
+.csv')
+]
+
+Tested it and it worked, but all filepaths (not only in shell, but MultiPipelineHandler and feature_selection as well) would need to be like this, and all data stored in dataLocal.
